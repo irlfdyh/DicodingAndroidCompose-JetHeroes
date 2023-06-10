@@ -5,6 +5,7 @@ import androidx.compose.animation.fadeIn
 import androidx.compose.animation.fadeOut
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.ExperimentalFoundationApi
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.PaddingValues
@@ -22,6 +23,7 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.derivedStateOf
@@ -35,6 +37,7 @@ import androidx.compose.ui.draw.shadow
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import coil.compose.AsyncImage
@@ -42,10 +45,16 @@ import com.dicoding.compose.lazy.jetheroes.model.HeroesData
 import com.dicoding.compose.lazy.jetheroes.ui.theme.JetHeroesTheme
 import kotlinx.coroutines.launch
 
+@OptIn(ExperimentalFoundationApi::class)
 @Composable
 fun JetHeroesApp(
     modifier: Modifier = Modifier
 ) {
+
+    val groupedHeroes = HeroesData.heroes
+        .sortedBy { it.name }
+        .groupBy { it.name[0] }
+
     Box(modifier = modifier) {
 
         val scope = rememberCoroutineScope()
@@ -58,12 +67,17 @@ fun JetHeroesApp(
             state = listState,
             contentPadding = PaddingValues(bottom = 80.dp)
         ) {
-            items(HeroesData.heroes, key = { it.id }) { hero ->
-                HeroListItem(
-                    modifier = Modifier.fillMaxWidth(),
-                    name = hero.name,
-                    photoUrl = hero.photoUrl
-                )
+            groupedHeroes.forEach { mapHero ->
+                stickyHeader {
+                    CharacterHeader(char = mapHero.key)
+                }
+                items(mapHero.value, key = { it.id }) { hero ->
+                    HeroListItem(
+                        modifier = Modifier.fillMaxWidth(),
+                        name = hero.name,
+                        photoUrl = hero.photoUrl
+                    )
+                }
             }
         }
         
@@ -133,6 +147,27 @@ fun ScrollToTopButton(
         Icon(
             imageVector = Icons.Filled.KeyboardArrowUp,
             contentDescription = null
+        )
+    }
+}
+
+@Composable
+fun CharacterHeader(
+    modifier: Modifier = Modifier,
+    char: Char
+) {
+    Surface(
+        modifier = modifier,
+        color = MaterialTheme.colorScheme.primary
+    ) {
+        Text(
+            text = char.toString(),
+            fontWeight = FontWeight.Black,
+            color = Color.White,
+            textAlign = TextAlign.Center,
+            modifier = Modifier
+                .fillMaxWidth()
+                .padding(8.dp)
         )
     }
 }
